@@ -43,6 +43,53 @@ test('Setup database', function (t) {
   })
 })
 
+test('POST /budget/currency should return 200 and budgets data', function (t) {
+  const opts = {
+    method: 'POST',
+    encoding: 'json',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+
+  const stream = servertest(server, `${BUDGET_ENDPOINT_BASE}/currency`, opts, function (err, res) {
+    t.error(err, 'No error')
+    t.equal(res.statusCode, 200, 'Should return 200')
+    t.equal(res.body.status, true, 'Response success should be true')
+    t.ok(res.body.data.length > 0, 'Response data should not be empty')
+    t.end()
+  })
+
+  stream.end(JSON.stringify({
+    year: 2023,
+    projectName: 'Initial Project'
+  }))
+})
+
+test('POST /budget/currency should return 404 for nonexistent project', function (t) {
+  const opts = {
+    method: 'POST',
+    encoding: 'json',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+
+  const stream = servertest(server, `${BUDGET_ENDPOINT_BASE}/currency`, opts, function (err, res) {
+    t.error(err, 'No error')
+    t.equal(res.statusCode, 404, 'Should return 404')
+    t.equal(res.body.success, false, 'Response success should be false')
+    t.equal(res.body.message, 'No project found', 'Response message should indicate no project found')
+    t.end()
+  })
+
+  stream.end(JSON.stringify({
+    year: 2024,
+    projectName: 'Nonexistent Project',
+    currency: 'TTD'
+  }))
+})
+
 test('GET /budget/:id should return 200 and budget data', function (t) {
   const id = 1
   servertest(server, `${BUDGET_ENDPOINT_BASE}/${id}`, { encoding: 'json' }, function (err, res) {
